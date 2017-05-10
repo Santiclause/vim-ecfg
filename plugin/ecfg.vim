@@ -80,10 +80,9 @@ EOF
         let ul_val=&l:ul
         setlocal ul=-1
         silent exe "%!ecfg decrypt ".a:fname
-        let b:ecfg_decrypted = 1
         if v:shell_error
             silent exe "%!cat ".a:fname
-            let b:ecfg_decrypted = 0
+            let b:ecfg_not_decrypted = 1
         endif
         setlocal nomodified
         let &l:ul=ul_val
@@ -91,7 +90,7 @@ EOF
 
     function! EcfgWriteCmd(type)
         let l:base = expand("<afile>")
-        if !b:ecfg_decrypted || !filereadable(l:base)
+        if exists("b:ecfg_not_decrypted") || !filereadable(l:base)
             call EcfgWriteDirect(a:type)
             return
         endif
