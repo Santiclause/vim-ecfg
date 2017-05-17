@@ -68,6 +68,8 @@ while i < len(lines):
                 base.readline()
                 filepointer += 1
             lines[i] = "< " + base.readline()
+            if not lines[i].endswith("\n"):
+                lines[i] += "\n"
             i += 1
             start += 1
             filepointer += 1
@@ -94,7 +96,7 @@ EOF
             call EcfgWriteDirect(a:type)
             return
         endif
-        exe "!ecfg decrypt % 1>/dev/null"
+        silent exe "!ecfg decrypt % 1>/dev/null"
         if v:shell_error
             let l:choice = confirm("You appear to be missing the private key to decrypt this file. Write your changes anyway?", "&Yes\n&No")
             if l:choice == 1
@@ -107,7 +109,7 @@ EOF
         call PyMerge(l:base, l:tmp)
         silent exe "!patch -s ".l:base." ".l:tmp
         if !v:shell_error
-            silent exe "!ecfg encrypt %"
+            silent exe "!ecfg encrypt % >/dev/null"
             if !v:shell_error
                 setlocal nomodified
             else
