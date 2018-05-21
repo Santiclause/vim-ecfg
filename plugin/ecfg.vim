@@ -106,6 +106,16 @@ EOF
         endif
         let l:tmp = tempname()
         silent exe "w !diff <(ecfg decrypt %) - >".l:tmp
+        if a:type == "json"
+            silent exe "!grep '_public_key' ".l:tmp
+        else
+            silent exe "!grep '^> _public_key:' ".l:tmp
+        endif
+        if !v:shell_error
+            call delete(l:tmp)
+            call EcfgWriteDirect(a:type)
+            return
+        endif
         call PyMerge(l:base, l:tmp)
         silent exe "!patch -s ".l:base." ".l:tmp
         if !v:shell_error
