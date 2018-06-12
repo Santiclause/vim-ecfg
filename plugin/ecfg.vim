@@ -41,7 +41,7 @@ function! EcfgWriteDirect(type)
 endfunction
 
 
-if has("python")
+if has("python") || has("python3")
     au BufReadPost,FileReadPost *.ecfg.yaml,*.ecfg.toml,*.ecfg.json call EcfgReadCmd(expand("<afile>"))
 
     function! PyMerge(base, patch)
