@@ -4,6 +4,8 @@ au BufWriteCmd,FileWriteCmd *.ecfg.yaml call EcfgWriteCmd("yaml")
 au BufWriteCmd,FileWriteCmd *.ecfg.toml call EcfgWriteCmd("toml")
 au BufWriteCmd,FileWriteCmd *.ecfg.json call EcfgWriteCmd("json")
 
+let s:path = fnamemodify(resolve(expand('<sfile>:p')), ':h')
+
 function! EcfgCreate(type)
     let l:choice = confirm("Generate a new keypair for this file?", "&Yes\n&No\n&Choose one at random")
     if l:choice == 1
@@ -45,37 +47,13 @@ if has("python") || has("python3")
     au BufReadPost,FileReadPost *.ecfg.yaml,*.ecfg.toml,*.ecfg.json call EcfgReadCmd(expand("<afile>"))
 
     function! PyMerge(base, patch)
-python << EOF
-import re, vim
-base = open(vim.eval("a:base"))
-patch = vim.eval("a:patch")
-with open(patch) as f:
-    lines = f.readlines()
+        let merge_script = join(readfile(s:path . '/merge_script.py'), "\n")
 
-p = re.compile(r"^(\d+)(?:,(\d+))?[cd]")
-filepointer = 1
-i = 0
-while i < len(lines):
-    m = p.match(lines[i])
-    i += 1
-    if m:
-        start, finish = m.groups()
-        if finish is None:
-            finish = start
-        start, finish = map(int, (start, finish))
-        while start <= finish:
-            while filepointer < start:
-                base.readline()
-                filepointer += 1
-            lines[i] = "< " + base.readline()
-            if not lines[i].endswith("\n"):
-                lines[i] += "\n"
-            i += 1
-            start += 1
-            filepointer += 1
-with open(patch, 'w') as f:
-    f.writelines(lines)
-EOF
+        if has('python')
+            execute 'py ' . merge_script
+        else
+            execute 'py3 ' . merge_script
+        endif
     endfunction
 
     function! EcfgReadCmd(fname)
