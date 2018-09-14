@@ -84,6 +84,10 @@ if has("python") || has("python3")
         endif
         let l:tmp = tempname()
         silent exe "w !diff <(ecfg decrypt %) - >".l:tmp
+        if match(readfile(l:tmp),"_public_key") != -1
+            call EcfgWriteDirect(a:type)
+            return
+        endif
         call PyMerge(l:base, l:tmp)
         silent exe "!patch -s ".l:base." ".l:tmp
         if !v:shell_error
